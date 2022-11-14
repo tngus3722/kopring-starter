@@ -7,6 +7,7 @@ import com.group.libraryapp.dto.user.request.UserUpdateRequest
 import com.group.libraryapp.dto.user.response.UserResponse
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -23,6 +24,7 @@ class UserServiceTest @Autowired constructor(
         userRepository.deleteAll()
     }
 
+    @DisplayName("유저가 정상적으로 저장된다")
     @Test
     fun saveUserTest() {
         // given
@@ -36,6 +38,7 @@ class UserServiceTest @Autowired constructor(
         assertThat(result[0].age).isEqualTo(null)
     }
 
+    @DisplayName("유저가 정상적으로 조회된다")
     @Test
     fun getUsersTest() {
         // given
@@ -53,6 +56,7 @@ class UserServiceTest @Autowired constructor(
         assertThat(result).extracting("age").containsExactlyInAnyOrder(26, 23)
     }
 
+    @DisplayName("유저가 정상적으로 업데이트 된다")
     @Test
     fun updateUserNameTest() {
         // given
@@ -65,6 +69,7 @@ class UserServiceTest @Autowired constructor(
         assertThat(result).extracting("name").isEqualTo("B")
     }
 
+    @DisplayName("유저가 정상적으로 삭제된다")
     @Test
     fun deleteUserTest() {
         // given

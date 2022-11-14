@@ -69,4 +69,7 @@ public class User {
         return id;
     }
 
+    public List<UserLoanHistory> getUserLoanHistories() {
+        return userLoanHistories;
+    }
 }
