@@ -74,7 +74,7 @@ class BookServiceTest @Autowired constructor(
         // when, then
         assertThrows<IllegalArgumentException> { bookService.loanBook(request) }
             .apply {
-                assertThat(this.message).isEqualTo("진작 대출되어 있는 책입니다")
+                assertThat(this.message).isEqualTo("현재 대출할 수 있는 책이 존재하지 않습니다.")
             }
     }
 
