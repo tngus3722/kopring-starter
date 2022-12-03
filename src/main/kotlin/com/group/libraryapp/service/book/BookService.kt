@@ -1,5 +1,6 @@
 package com.group.libraryapp.service.book
 
+import com.group.libraryapp.constant.UserLoanStatus
 import com.group.libraryapp.domain.book.Book
 import com.group.libraryapp.domain.book.BookRepository
 import com.group.libraryapp.domain.user.UserRepository
@@ -20,16 +21,19 @@ class BookService(
 
     @Transactional
     fun saveBook(request: BookRequest) {
-        val book = Book(request.name)
+        val book = Book(request.name, request.type)
         bookRepository.save(book)
     }
 
     @Transactional
     fun loanBook(request: BookLoanRequest) {
         val book = bookRepository.findByName(request.bookName) ?: fail()
-        if (userLoanHistoryRepository.findByBookNameAndIsReturn(request.bookName, false) != null) {
+        // 해당 책의 대출이력이 있으며, 그 이력이 대출되어 있는 상태라면 대여 불가
+        val userLoanHistoryList = userLoanHistoryRepository.findByBookName(request.bookName)
+        if (userLoanHistoryList.isNotEmpty() && userLoanHistoryList.any { o -> o.status == UserLoanStatus.LOANED }) {
             throw IllegalArgumentException("현재 대출할 수 있는 책이 존재하지 않습니다.")
         }
+
         val user = userRepository.findByName(request.userName) ?: fail()
 
         user.loanBook(book)
