@@ -1,7 +1,10 @@
 package com.group.libraryapp.service.user
 
+import com.group.libraryapp.constant.UserLoanStatus
 import com.group.libraryapp.domain.user.User
 import com.group.libraryapp.domain.user.UserRepository
+import com.group.libraryapp.domain.user.loanhistory.UserLoanHistory
+import com.group.libraryapp.domain.user.loanhistory.UserLoanHistoryRepository
 import com.group.libraryapp.dto.user.request.UserCreateRequest
 import com.group.libraryapp.dto.user.request.UserUpdateRequest
 import com.group.libraryapp.dto.user.response.UserResponse
@@ -15,7 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest
 @SpringBootTest
 class UserServiceTest @Autowired constructor(
     private val userRepository: UserRepository,
-    private val userService: UserService
+    private val userService: UserService,
+    private val userLoanHistoryRepository: UserLoanHistoryRepository,
 ) {
 
 
@@ -79,5 +83,52 @@ class UserServiceTest @Autowired constructor(
         // then
         val result = userRepository.findAll()
         assertThat(result).isEmpty()
+    }
+
+    @DisplayName("대출기록이 없는 유저도 응답에 포함된다")
+    @Test
+    fun getUserLoanHistory() {
+        // given
+        userRepository.save(User("A", null))
+
+        // when
+        val results = userService.getUserLoanHistory()
+        // then
+        assertThat(results).hasSize(1)
+        assertThat(results[0].name).isEqualTo("A")
+        assertThat(results[0].books).isEmpty()
+    }
+
+    @DisplayName("대출기록이 많은 유저도 응답이 정상동작한다")
+    @Test
+    fun getUserLoanHistory2() {
+        // given
+        val savedUserA = userRepository.save(User("A", null))
+        val savedUserB = userRepository.save(User("B", null))
+        userLoanHistoryRepository.saveAll(
+            listOf(
+                UserLoanHistory.fixture(savedUserA, "클린코드"),
+                UserLoanHistory.fixture(savedUserB, "이상한 나라의 엘리스", UserLoanStatus.RETURNED),
+                UserLoanHistory.fixture(savedUserB, "운영체제"),
+                UserLoanHistory.fixture(savedUserB, "C언어"),
+
+            )
+        )
+
+        // when
+        val results = userService.getUserLoanHistory().sortedBy  { o -> o.name }
+
+        // then
+        assertThat(results).hasSize(2)
+        assertThat(results[0].name).isEqualTo("A")
+        assertThat(results[0].books).extracting("name")
+            .containsExactlyInAnyOrder("클린코드")
+        assertThat(results[0].books).extracting("isReturn")
+            .containsExactlyInAnyOrder(false)
+        assertThat(results[1].name).isEqualTo("B")
+        assertThat(results[1].books).extracting("name")
+            .containsExactlyInAnyOrder("이상한 나라의 엘리스", "운영체제", "C언어")
+        assertThat(results[1].books).extracting("isReturn")
+            .containsExactlyInAnyOrder(false, false, true)
     }
 }

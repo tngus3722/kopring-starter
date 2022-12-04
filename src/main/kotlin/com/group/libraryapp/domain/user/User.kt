@@ -3,6 +3,7 @@ package com.group.libraryapp.domain.user
 import com.group.libraryapp.constant.UserLoanStatus
 import com.group.libraryapp.domain.book.Book
 import com.group.libraryapp.domain.user.loanhistory.UserLoanHistory
+import org.hibernate.annotations.BatchSize
 import javax.persistence.*
 
 @Entity
@@ -10,6 +11,7 @@ class User(
     @Column(nullable = false)
     var name: String,
     val age: Int?,
+    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = [CascadeType.ALL])
     val userLoanHistories: MutableList<UserLoanHistory> = mutableListOf(),
     @Id

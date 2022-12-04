@@ -4,15 +4,18 @@ import com.group.libraryapp.domain.user.User
 import com.group.libraryapp.domain.user.UserRepository
 import com.group.libraryapp.dto.user.request.UserCreateRequest
 import com.group.libraryapp.dto.user.request.UserUpdateRequest
+import com.group.libraryapp.dto.user.response.UserLoanHistoryResponse
 import com.group.libraryapp.dto.user.response.UserResponse
 import com.group.libraryapp.util.fail
 import com.group.libraryapp.util.findByIdOrThrow
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class UserService(private val userRepository: UserRepository) {
+class UserService(
+    private val userRepository: UserRepository,
+) {
+
 
     @Transactional
     fun saveUser(request: UserCreateRequest) {
@@ -36,5 +39,11 @@ class UserService(private val userRepository: UserRepository) {
     fun deleteUser(userName: String) {
         val user = userRepository.findByName(userName) ?: fail()
         userRepository.delete(user)
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserLoanHistory(): List<UserLoanHistoryResponse> {
+        return userRepository.findAll()
+            .map {userEntity ->  UserLoanHistoryResponse.from(userEntity) }
     }
 }
