@@ -23,6 +23,7 @@ data class BookHistoryResponse(
     val name: String,
     val isReturn: Boolean,
 ) {
+    // NOTE : 스터디 기록용 : 강의를 들으며 처음부터 정적 static Method와 N+1을 해결하도록 작성하여 26-31강 동안 코드 수정이 없음
     companion object {
         fun from(userLoanHistory: UserLoanHistory): BookHistoryResponse {
             return BookHistoryResponse(
