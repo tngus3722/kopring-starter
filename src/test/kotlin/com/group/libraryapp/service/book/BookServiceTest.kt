@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class BookHistoryResponseServiceTest @Autowired constructor(
+class BookServiceTest @Autowired constructor(
     private val bookService: BookService,
     private val bookRepository: BookRepository,
     private val userRepository: UserRepository,
@@ -95,5 +95,45 @@ class BookHistoryResponseServiceTest @Autowired constructor(
         val result = userLoanHistoryRepository.findAll()
         assertThat(result).hasSize(1)
         assertThat(result[0].status).isEqualTo(UserLoanStatus.RETURNED)
+    }
+
+    @DisplayName("빌린 책의 갯수를 정상 확인한다")
+    @Test
+    fun getCountLoanedBook() {
+        // given
+        val savedUser = userRepository.save(User("정수현", null))
+        userLoanHistoryRepository.saveAll(
+            listOf(
+                UserLoanHistory.fixture(savedUser, "클린코드"),
+                UserLoanHistory.fixture(savedUser, "클린코드2", UserLoanStatus.RETURNED)
+            )
+        )
+
+        // when
+        val count = bookService.getCountLoanedBook();
+        // then
+        assertThat(count).isEqualTo(1)
+    }
+
+    @DisplayName("분야별 책 권수를 정상 확인한다")
+    @Test
+    fun getBookStatistics() {
+        // given
+        bookRepository.saveAll(
+            listOf(
+                Book.fixture("클린코드"),
+                Book.fixture("클린코드2", BookType.ECONOMY),
+                Book.fixture("클린코드3", BookType.SCIENCE),
+                Book.fixture("클린코드4"),
+            )
+        )
+
+        // when
+        val result = bookService.getBookStatistics();
+
+        // then
+        assertThat(result).hasSize(3)
+        assertThat(result).extracting("type").containsExactlyInAnyOrder(BookType.COMPUTER, BookType.ECONOMY, BookType.SCIENCE)
+        assertThat(result).extracting("count").containsExactlyInAnyOrder(1L,2L,1L)
     }
 }
