@@ -43,7 +43,7 @@ class UserService(
 
     @Transactional(readOnly = true)
     fun getUserLoanHistory(): List<UserLoanHistoryResponse> {
-        return userRepository.findAll()
+        return userRepository.findAllWithHistories()
             .map {userEntity ->  UserLoanHistoryResponse.from(userEntity) }
     }
 }

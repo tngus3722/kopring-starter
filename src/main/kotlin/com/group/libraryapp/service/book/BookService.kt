@@ -4,6 +4,7 @@ import com.group.libraryapp.constant.UserLoanStatus
 import com.group.libraryapp.domain.book.Book
 import com.group.libraryapp.domain.book.BookRepository
 import com.group.libraryapp.domain.user.UserRepository
+import com.group.libraryapp.domain.user.loanhistory.UserLoanHistory
 import com.group.libraryapp.domain.user.loanhistory.UserLoanHistoryRepository
 import com.group.libraryapp.dto.book.request.BookLoanRequest
 import com.group.libraryapp.dto.book.request.BookRequest
@@ -30,13 +31,10 @@ class BookService(
     fun loanBook(request: BookLoanRequest) {
         val book = bookRepository.findByName(request.bookName) ?: fail()
         // 해당 책의 대출이력이 있으며, 그 이력이 대출되어 있는 상태라면 대여 불가
-        val userLoanHistoryList = userLoanHistoryRepository.findByBookName(request.bookName)
-        if (userLoanHistoryList.isNotEmpty() && userLoanHistoryList.any { o -> o.status == UserLoanStatus.LOANED }) {
+        if(userLoanHistoryRepository.searchUserLoanHistoryBy(request.bookName, UserLoanStatus.LOANED) != null) {
             throw IllegalArgumentException("현재 대출할 수 있는 책이 존재하지 않습니다.")
         }
-
         val user = userRepository.findByName(request.userName) ?: fail()
-
         user.loanBook(book)
     }
 
@@ -48,7 +46,7 @@ class BookService(
 
     @Transactional(readOnly = true)
     fun getCountLoanedBook(): Int {
-        return userLoanHistoryRepository.countAllByStatus(UserLoanStatus.LOANED).toInt()
+        return userLoanHistoryRepository.count(UserLoanStatus.LOANED).toInt()
     }
 
     @Transactional(readOnly = true)
